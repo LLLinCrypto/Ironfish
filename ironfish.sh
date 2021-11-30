@@ -1,20 +1,4 @@
 #!/bin/bash
-
-sudo apt update
-apt-get install sudo -y
-sudo apt install ufw -y
-sudo ufw allow 22:65535/tcp
-sudo ufw allow 22:65535/udp
-sudo ufw deny out from any to 10.0.0.0/8
-sudo ufw deny out from any to 192.168.0.0/16
-sudo ufw deny out from any to 169.254.0.0/16
-sudo ufw deny out from any to 198.18.0.0/15
-sudo ufw deny out from any to 100.64.0.0/10
-sudo ufw --force enable
-echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf > /dev/null
-
-
-
 exists()
 {
   command -v "$1" >/dev/null 2>&1
@@ -28,7 +12,7 @@ bash_profile=$HOME/.bash_profile
 if [ -f "$bash_profile" ]; then
     . $HOME/.bash_profile
 fi
-sleep 1 && curl -s  | bash && sleep 1
+sleep 1 && curl -s https://api.nodes.guru/logo.sh | bash && sleep 3
 
 function setupVars {
 	if [ ! $IRONFISH_WALLET ]; then
@@ -54,7 +38,7 @@ function setupVars {
 }
 
 function installSnapshot {
-	# block: 290805
+	
 	echo -e '\n\e[42mInstalling snapshot...\e[0m\n' && sleep 1
 	systemctl stop ironfishd
 	wget -O $HOME/ironfish_snapshot_08112021.tar.gz https://storage.nodes.guru/ironfish_snapshot_08112021.tar.gz
@@ -81,23 +65,7 @@ function backupWallet {
 	echo -e '\n\e[42mYour key file:\e[0m\n' && sleep 1
 	walletBkpPath="$HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json"
 	cat $HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json
-	# cnt=0
-	# while true; do
-		# if [ -f "$walletBkpPath" ]; then
-			# cat $HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json
-			# break
-		# elif [[ "$cnt" -gt 9 ]]; then
-			# echo "10 attempts was done, looks like you dont have wallet with this name"
-			# break
-		# else
-			# echo "Wait for key..."
-			# echo "Be sure you input correct wallet name"
-			# echo "You can check your wallets by command:"
-			# echo -e "\e[7mironfish accounts:list\e[0m"
-			# echo -e "Press \e[7mCtrl + C\e[0m for exit\n"
-			# sleep 3
-			# ((cnt++))
-		# fi
+
 	# done
 	echo -e "\n\nImport command:"
 	echo -e "\e[7mironfish accounts:import $walletBkpPath\e[0m"
@@ -113,7 +81,7 @@ function installDeps {
 	curl https://deb.nodesource.com/setup_16.x | sudo bash
 	curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 	echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-	# sudo apt upgrade -y < "/dev/null"
+	
 	sudo apt install curl make clang pkg-config libssl-dev build-essential git jq nodejs -y < "/dev/null"
 	sudo npm --force install -g yarn
 }
@@ -133,7 +101,7 @@ function installSoftware {
 	git clone https://github.com/iron-fish/ironfish
 	cd $HOME/ironfish
 	git pull
-	# git checkout 45d85b7916b72f7ad263491b0c7fb6916b2edabd
+	
 	cargo install --force wasm-pack
 	yarn
 	cp $HOME/ironfish/ironfish-cli/bin/ironfish /usr/bin
@@ -146,13 +114,14 @@ function updateSoftware {
 	. $HOME/.cargo/env
 	cp -r $HOME/.ironfish/accounts $HOME/ironfish_accounts_$(date +%s)
 	echo -e '\n\e[42mInstall software\e[0m\n' && sleep 1
+	rm -r $HOME/.ironfish
 	cd $HOME
+	installDeps
 	rm -r ironfish
-	# git clone https://github.com/iron-fish/ironfish -b staging
+	
 	git clone https://github.com/iron-fish/ironfish
 	cd $HOME/ironfish
-	# git reset --hard
-	# git pull origin staging
+	
 	cargo install --force wasm-pack
 	yarn
 }
@@ -165,6 +134,7 @@ function updateSoftwareBeta {
 	cp -r $HOME/.ironfish/accounts $HOME/ironfish_accounts_$(date +%s)
 	echo -e '\n\e[42mInstall software\e[0m\n' && sleep 1
 	cd $HOME
+	installDeps
 	rm -r ironfish
 	git clone https://github.com/iron-fish/ironfish -b beta
 	cd $HOME/ironfish
@@ -195,7 +165,7 @@ Description=IronFish Miner
 After=network-online.target
 [Service]
 User=$USER
-ExecStart=/usr/bin/yarn --cwd $HOME/ironfish/ironfish-cli/ start miners:start -t -1
+ExecStart=/usr/bin/yarn --cwd $HOME/ironfish/ironfish-cli/ start miners:start -t $IRONFISH_THREADS
 Restart=always
 RestartSec=10
 LimitNOFILE=10000
@@ -230,35 +200,7 @@ fi
 . $HOME/.bash_profile
 }
 
-# function installListener {
-	# wget -O $HOME/ironfish_restarter.sh https://api.nodes.guru/ironfish_restarter.sh
-	# chmod +x $HOME/ironfish_restarter.sh
-	# echo -e '\n\e[42mCreating a listener service\e[0m\n' && sleep 1
-	# echo "[Unit]
-	# Description=IronFish Listener
-	# After=network-online.target
-	# [Service]
-	# User=$USER
-	# ExecStart=/bin/bash $HOME/ironfish_restarter.sh
-	# Restart=always
-	# RestartSec=10
-	# LimitNOFILE=10000
-	# [Install]
-	# WantedBy=multi-user.target
-	# " > $HOME/ironfishd-listener.service
-	# sudo mv $HOME/ironfishd-listener.service /etc/systemd/system
-	# echo -e '\n\e[42mRunning a listener service\e[0m\n' && sleep 1
-	# sudo systemctl daemon-reload
-	# sudo systemctl enable ironfishd-listener
-	# sudo systemctl restart ironfishd-listener
-	# if [[ `service ironfishd-miner status | grep active` =~ "running" ]]; then
-	  # echo -e "Your IronFish listener \e[32minstalled and works\e[39m!"
-	  # echo -e "You can check listener status by the command \e[7mservice ironfishd-listener status\e[0m"
-	  # echo -e "Press \e[7mQ\e[0m for exit from status menu"
-	# else
-	  # echo -e "Your IronFish listener \e[31mwas not installed correctly\e[39m, please reinstall."
-	# fi
-# }
+
 
 function deleteIronfish {
 	sudo systemctl disable ironfishd ironfishd-miner ironfishd-listener
@@ -267,17 +209,13 @@ function deleteIronfish {
 }
 
 PS3='Please enter your choice (input your option number and press enter): '
-# options=("Setup vars" "Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Install snapshot" "Delete" "Quit")
-# options=("Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Install snapshot" "Delete" "Quit")
+
 options=("Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Delete" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
         # "Setup vars")
-            # echo -e '\n\e[42mYou choose setup vars...\e[0m\n' && sleep 1
-			# setupVars
-			# break
-            # ;;
+         
         "Install")
             echo -e '\n\e[42mYou choose install...\e[0m\n' && sleep 1
 			setupVars
@@ -306,24 +244,14 @@ do
 			echo -e '\n\e[33mYour node was upgraded!\e[0m\n' && sleep 1
 			break
             ;;
-        # "Install listener")
-            # echo -e '\n\e[93mYou choose install listener...\e[0m\n' && sleep 1
-			# installListener
-			# echo -e '\n\e[93mIronfish listener was installed!\e[0m\n' && sleep 1
-			# break
-            # ;;
+   
 		"Backup wallet")
 			echo -e '\n\e[33mYou choose backup wallet...\e[0m\n' && sleep 1
 			backupWallet
 			echo -e '\n\e[33mYour wallet was saved in $HOME/.ironfish/keys folder!\e[0m\n' && sleep 1
 			break
             ;;
-		# "Install snapshot")
-			# echo -e '\n\e[33mYou choose install snapshot...\e[0m\n' && sleep 1
-			# installSnapshot
-			# echo -e '\n\e[33mSnapshot was installed, node was started.\e[0m\n' && sleep 1
-			# break
-            # ;;
+		
 		"Delete")
             echo -e '\n\e[31mYou choose delete...\e[0m\n' && sleep 1
 			deleteIronfish
