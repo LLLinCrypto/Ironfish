@@ -38,7 +38,7 @@ function setupVars {
 }
 
 function installSnapshot {
-	
+	# block: 290805
 	echo -e '\n\e[42mInstalling snapshot...\e[0m\n' && sleep 1
 	systemctl stop ironfishd
 	wget -O $HOME/ironfish_snapshot_08112021.tar.gz https://storage.nodes.guru/ironfish_snapshot_08112021.tar.gz
@@ -66,7 +66,7 @@ function backupWallet {
 	walletBkpPath="$HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json"
 	cat $HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json
 
-	# done
+
 	echo -e "\n\nImport command:"
 	echo -e "\e[7mironfish accounts:import $walletBkpPath\e[0m"
 	cd $HOME
@@ -81,7 +81,7 @@ function installDeps {
 	curl https://deb.nodesource.com/setup_16.x | sudo bash
 	curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 	echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-	
+	# sudo apt upgrade -y < "/dev/null"
 	sudo apt install curl make clang pkg-config libssl-dev build-essential git jq nodejs -y < "/dev/null"
 	sudo npm --force install -g yarn
 }
@@ -108,27 +108,34 @@ function installSoftware {
 }
 
 function updateSoftware {
-	sudo systemctl stop ironfishd ironfishd-miner ironfishd-listener
-	sudo systemctl disable ironfishd-listener
+	if [[ `service ironfishd-listener status | grep active` =~ "running" ]]; then
+	  sudo systemctl stop ironfishd-listener
+	  sudo systemctl disable ironfishd-listener
+	fi
+	sudo systemctl stop ironfishd ironfishd-miner
 	. $HOME/.bash_profile
 	. $HOME/.cargo/env
 	cp -r $HOME/.ironfish/accounts $HOME/ironfish_accounts_$(date +%s)
 	echo -e '\n\e[42mInstall software\e[0m\n' && sleep 1
-	rm -r $HOME/.ironfish
+	# rm -r $HOME/.ironfish
 	cd $HOME
 	installDeps
 	rm -r ironfish
-	
+	# git clone https://github.com/iron-fish/ironfish -b staging
 	git clone https://github.com/iron-fish/ironfish
 	cd $HOME/ironfish
-	
+	# git reset --hard
+	# git pull origin staging
 	cargo install --force wasm-pack
 	yarn
 }
 
 function updateSoftwareBeta {
-	sudo systemctl stop ironfishd ironfishd-miner ironfishd-listener
-	sudo systemctl disable ironfishd-listener
+	if [[ `service ironfishd-listener status | grep active` =~ "running" ]]; then
+	  sudo systemctl stop ironfishd-listener
+	  sudo systemctl disable ironfishd-listener
+	fi
+	sudo systemctl stop ironfishd ironfishd-miner
 	. $HOME/.bash_profile
 	. $HOME/.cargo/env
 	cp -r $HOME/.ironfish/accounts $HOME/ironfish_accounts_$(date +%s)
@@ -215,7 +222,10 @@ select opt in "${options[@]}"
 do
     case $opt in
         # "Setup vars")
-         
+            # echo -e '\n\e[42mYou choose setup vars...\e[0m\n' && sleep 1
+			# setupVars
+			# break
+            # ;;
         "Install")
             echo -e '\n\e[42mYou choose install...\e[0m\n' && sleep 1
 			setupVars
@@ -244,14 +254,24 @@ do
 			echo -e '\n\e[33mYour node was upgraded!\e[0m\n' && sleep 1
 			break
             ;;
-   
+        # "Install listener")
+            # echo -e '\n\e[93mYou choose install listener...\e[0m\n' && sleep 1
+			# installListener
+			# echo -e '\n\e[93mIronfish listener was installed!\e[0m\n' && sleep 1
+			# break
+            # ;;
 		"Backup wallet")
 			echo -e '\n\e[33mYou choose backup wallet...\e[0m\n' && sleep 1
 			backupWallet
 			echo -e '\n\e[33mYour wallet was saved in $HOME/.ironfish/keys folder!\e[0m\n' && sleep 1
 			break
             ;;
-		
+		# "Install snapshot")
+			# echo -e '\n\e[33mYou choose install snapshot...\e[0m\n' && sleep 1
+			# installSnapshot
+			# echo -e '\n\e[33mSnapshot was installed, node was started.\e[0m\n' && sleep 1
+			# break
+            # ;;
 		"Delete")
             echo -e '\n\e[31mYou choose delete...\e[0m\n' && sleep 1
 			deleteIronfish
