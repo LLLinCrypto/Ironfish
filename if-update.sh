@@ -1,8 +1,8 @@
 #!/bin/bash
-systemctl stop ironfish
+#systemctl stop ironfish
 service ironfishd-miner stop
 service ironfishd stop
-rm etc/systemd/system/ironfishd-miner.service
+rm -rf /etc/systemd/system/ironfishd-miner.service
 
 
 echo "[Unit]
