@@ -10,7 +10,7 @@ Description=IronFish Miner
 After=network-online.target
 [Service]
 User=root
-ExecStart=/usr/bin/yarn --cwd /root/ironfish/ironfish-cli/ start miners:start -t -1
+ExecStart=/usr/bin/yarn --cwd /root/ironfish/ironfish-cli/ start miners:start -t $thr
 Restart=always
 RuntimeMaxSec=36000
 RestartSec=10
