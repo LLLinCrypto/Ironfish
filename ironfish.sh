@@ -65,8 +65,24 @@ function backupWallet {
 	echo -e '\n\e[42mYour key file:\e[0m\n' && sleep 1
 	walletBkpPath="$HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json"
 	cat $HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json
-
-
+	# cnt=0
+	# while true; do
+		# if [ -f "$walletBkpPath" ]; then
+			# cat $HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json
+			# break
+		# elif [[ "$cnt" -gt 9 ]]; then
+			# echo "10 attempts was done, looks like you dont have wallet with this name"
+			# break
+		# else
+			# echo "Wait for key..."
+			# echo "Be sure you input correct wallet name"
+			# echo "You can check your wallets by command:"
+			# echo -e "\e[7mironfish accounts:list\e[0m"
+			# echo -e "Press \e[7mCtrl + C\e[0m for exit\n"
+			# sleep 3
+			# ((cnt++))
+		# fi
+	# done
 	echo -e "\n\nImport command:"
 	echo -e "\e[7mironfish accounts:import $walletBkpPath\e[0m"
 	cd $HOME
@@ -87,10 +103,12 @@ function installDeps {
 }
 
 function createConfig {
+	mkdir -p $HOME/.ironfish
 	echo "{
 		\"nodeName\": \"${IRONFISH_NODENAME}\",
 		\"blockGraffiti\": \"${IRONFISH_NODENAME}\"
 	}" > $HOME/.ironfish/config.json
+	systemctl restart ironfishd ironfishd-miner
 }
 
 function installSoftware {
@@ -101,14 +119,14 @@ function installSoftware {
 	git clone https://github.com/iron-fish/ironfish
 	cd $HOME/ironfish
 	git pull
-	
+	# git checkout 45d85b7916b72f7ad263491b0c7fb6916b2edabd
 	cargo install --force wasm-pack
 	yarn
 	cp $HOME/ironfish/ironfish-cli/bin/ironfish /usr/bin
 }
 
 function updateSoftware {
-	if [[ `service ironfishd-listener status | grep active` =~ "running" ]]; then
+	if [[ ! `service ironfishd-listener status | grep active` =~ "running" ]]; then
 	  sudo systemctl stop ironfishd-listener
 	  sudo systemctl disable ironfishd-listener
 	fi
@@ -131,7 +149,7 @@ function updateSoftware {
 }
 
 function updateSoftwareBeta {
-	if [[ `service ironfishd-listener status | grep active` =~ "running" ]]; then
+	if [[ ! `service ironfishd-listener status | grep active` =~ "running" ]]; then
 	  sudo systemctl stop ironfishd-listener
 	  sudo systemctl disable ironfishd-listener
 	fi
