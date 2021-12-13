@@ -145,6 +145,7 @@ function updateSoftware {
 	# git reset --hard
 	# git pull origin staging
 	cargo install --force wasm-pack
+	sed -i 's/REQUEST_BLOCKS_PER_MESSAGE = 20/REQUEST_BLOCKS_PER_MESSAGE = 5/g' $HOME/ironfish/ironfish/src/syncer.ts
 	yarn
 }
 
