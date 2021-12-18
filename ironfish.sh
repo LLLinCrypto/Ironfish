@@ -3,6 +3,16 @@ exists()
 {
   command -v "$1" >/dev/null 2>&1
 }
+
+service_exists() {
+    local n=$1
+    if [[ $(systemctl list-units --all -t service --full --no-legend "$n.service" | sed 's/^\s*//g' | cut -f1 -d' ') == $n.service ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 if exists curl; then
 	echo ''
 else
@@ -65,29 +75,10 @@ function backupWallet {
 	echo -e '\n\e[42mYour key file:\e[0m\n' && sleep 1
 	walletBkpPath="$HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json"
 	cat $HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json
-	# cnt=0
-	# while true; do
-		# if [ -f "$walletBkpPath" ]; then
-			# cat $HOME/.ironfish/keys/$IRONFISH_WALLET_BACKUP_NAME.json
-			# break
-		# elif [[ "$cnt" -gt 9 ]]; then
-			# echo "10 attempts was done, looks like you dont have wallet with this name"
-			# break
-		# else
-			# echo "Wait for key..."
-			# echo "Be sure you input correct wallet name"
-			# echo "You can check your wallets by command:"
-			# echo -e "\e[7mironfish accounts:list\e[0m"
-			# echo -e "Press \e[7mCtrl + C\e[0m for exit\n"
-			# sleep 3
-			# ((cnt++))
-		# fi
-	# done
 	echo -e "\n\nImport command:"
 	echo -e "\e[7mironfish accounts:import $walletBkpPath\e[0m"
 	cd $HOME
 }
-
 function installDeps {
 	echo -e '\n\e[42mPreparing to install\e[0m\n' && sleep 1
 	cd $HOME
@@ -101,7 +92,6 @@ function installDeps {
 	sudo apt install curl make clang pkg-config libssl-dev build-essential git jq nodejs -y < "/dev/null"
 	sudo npm --force install -g yarn
 }
-
 function createConfig {
 	mkdir -p $HOME/.ironfish
 	echo "{
@@ -126,9 +116,9 @@ function installSoftware {
 }
 
 function updateSoftware {
-	if [[ ! `service ironfishd-listener status | grep active` =~ "running" ]]; then
-	  sudo systemctl stop ironfishd-listener
-	  sudo systemctl disable ironfishd-listener
+	if service_exists ironfishd-listener; then
+		sudo systemctl stop ironfishd-listener
+		sudo systemctl disable ironfishd-listener
 	fi
 	sudo systemctl stop ironfishd ironfishd-miner
 	. $HOME/.bash_profile
@@ -139,20 +129,19 @@ function updateSoftware {
 	cd $HOME
 	installDeps
 	rm -r ironfish
-	# git clone https://github.com/iron-fish/ironfish -b staging
+	
 	git clone https://github.com/iron-fish/ironfish
 	cd $HOME/ironfish
-	# git reset --hard
-	# git pull origin staging
+	
 	cargo install --force wasm-pack
 	sed -i 's/REQUEST_BLOCKS_PER_MESSAGE = 20/REQUEST_BLOCKS_PER_MESSAGE = 5/g' $HOME/ironfish/ironfish/src/syncer.ts
 	yarn
 }
 
 function updateSoftwareBeta {
-	if [[ ! `service ironfishd-listener status | grep active` =~ "running" ]]; then
-	  sudo systemctl stop ironfishd-listener
-	  sudo systemctl disable ironfishd-listener
+	if service_exists ironfishd-listener; then
+		sudo systemctl stop ironfishd-listener
+		sudo systemctl disable ironfishd-listener
 	fi
 	sudo systemctl stop ironfishd ironfishd-miner
 	. $HOME/.bash_profile
@@ -228,6 +217,7 @@ fi
 
 
 
+
 function deleteIronfish {
 	sudo systemctl disable ironfishd ironfishd-miner ironfishd-listener
 	sudo systemctl stop ironfishd ironfishd-miner ironfishd-listener
@@ -235,7 +225,8 @@ function deleteIronfish {
 }
 
 PS3='Please enter your choice (input your option number and press enter): '
-
+# options=("Setup vars" "Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Install snapshot" "Delete" "Quit")
+# options=("Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Install snapshot" "Delete" "Quit")
 options=("Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Delete" "Quit")
 select opt in "${options[@]}"
 do
@@ -251,8 +242,8 @@ do
 			setupSwap
 			installDeps
 			installSoftware
-			createConfig
 			installService
+			createConfig
 			#installListener
 			break
             ;;
