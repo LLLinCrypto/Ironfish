@@ -48,7 +48,7 @@ function setupVars {
 }
 
 function installSnapshot {
-	# block: 290805
+	
 	echo -e '\n\e[42mInstalling snapshot...\e[0m\n' && sleep 1
 	systemctl stop ironfishd
 	wget -O $HOME/ironfish_snapshot_08112021.tar.gz https://storage.nodes.guru/ironfish_snapshot_08112021.tar.gz
@@ -88,10 +88,11 @@ function installDeps {
 	curl https://deb.nodesource.com/setup_16.x | sudo bash
 	curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 	echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-	# sudo apt upgrade -y < "/dev/null"
+	
 	sudo apt install curl make clang pkg-config libssl-dev build-essential git jq nodejs -y < "/dev/null"
 	sudo npm --force install -g yarn
 }
+
 function createConfig {
 	mkdir -p $HOME/.ironfish
 	echo "{
@@ -109,13 +110,14 @@ function installSoftware {
 	git clone https://github.com/iron-fish/ironfish
 	cd $HOME/ironfish
 	git pull
-	# git checkout 45d85b7916b72f7ad263491b0c7fb6916b2edabd
+	
 	cargo install --force wasm-pack
 	yarn
 	cp $HOME/ironfish/ironfish-cli/bin/ironfish /usr/bin
 }
 
 function updateSoftware {
+	
 	if service_exists ironfishd-listener; then
 		sudo systemctl stop ironfishd-listener
 		sudo systemctl disable ironfishd-listener
@@ -125,19 +127,16 @@ function updateSoftware {
 	. $HOME/.cargo/env
 	cp -r $HOME/.ironfish/accounts $HOME/ironfish_accounts_$(date +%s)
 	echo -e '\n\e[42mInstall software\e[0m\n' && sleep 1
-	# rm -r $HOME/.ironfish
+	
 	cd $HOME
 	installDeps
 	rm -r ironfish
 	
 	git clone https://github.com/iron-fish/ironfish
 	cd $HOME/ironfish
-	
 	cargo install --force wasm-pack
-	sed -i 's/REQUEST_BLOCKS_PER_MESSAGE = 20/REQUEST_BLOCKS_PER_MESSAGE = 5/g' $HOME/ironfish/ironfish/src/syncer.ts
 	yarn
 }
-
 function updateSoftwareBeta {
 	if service_exists ironfishd-listener; then
 		sudo systemctl stop ironfishd-listener
@@ -225,8 +224,7 @@ function deleteIronfish {
 }
 
 PS3='Please enter your choice (input your option number and press enter): '
-# options=("Setup vars" "Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Install snapshot" "Delete" "Quit")
-# options=("Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Install snapshot" "Delete" "Quit")
+
 options=("Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Delete" "Quit")
 select opt in "${options[@]}"
 do
