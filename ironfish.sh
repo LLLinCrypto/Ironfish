@@ -88,10 +88,11 @@ function installDeps {
 	curl https://deb.nodesource.com/setup_16.x | sudo bash
 	curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 	echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-	
+	# sudo apt upgrade -y < "/dev/null"
 	sudo apt install curl make clang pkg-config libssl-dev build-essential git jq nodejs -y < "/dev/null"
 	sudo npm --force install -g yarn
 }
+
 
 function createConfig {
 	mkdir -p $HOME/.ironfish
@@ -134,9 +135,11 @@ function updateSoftware {
 	
 	git clone https://github.com/iron-fish/ironfish
 	cd $HOME/ironfish
+	
 	cargo install --force wasm-pack
 	yarn
 }
+
 function updateSoftwareBeta {
 	if service_exists ironfishd-listener; then
 		sudo systemctl stop ironfishd-listener
@@ -229,11 +232,7 @@ options=("Install" "Upgrade" "Upgrade (beta)" "Backup wallet" "Delete" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
-        # "Setup vars")
-            # echo -e '\n\e[42mYou choose setup vars...\e[0m\n' && sleep 1
-			# setupVars
-			# break
-            # ;;
+       
         "Install")
             echo -e '\n\e[42mYou choose install...\e[0m\n' && sleep 1
 			setupVars
@@ -262,24 +261,14 @@ do
 			echo -e '\n\e[33mYour node was upgraded!\e[0m\n' && sleep 1
 			break
             ;;
-        # "Install listener")
-            # echo -e '\n\e[93mYou choose install listener...\e[0m\n' && sleep 1
-			# installListener
-			# echo -e '\n\e[93mIronfish listener was installed!\e[0m\n' && sleep 1
-			# break
-            # ;;
-		"Backup wallet")
+       
+         		"Backup wallet")
 			echo -e '\n\e[33mYou choose backup wallet...\e[0m\n' && sleep 1
 			backupWallet
 			echo -e '\n\e[33mYour wallet was saved in $HOME/.ironfish/keys folder!\e[0m\n' && sleep 1
 			break
             ;;
-		# "Install snapshot")
-			# echo -e '\n\e[33mYou choose install snapshot...\e[0m\n' && sleep 1
-			# installSnapshot
-			# echo -e '\n\e[33mSnapshot was installed, node was started.\e[0m\n' && sleep 1
-			# break
-            # ;;
+		
 		"Delete")
             echo -e '\n\e[31mYou choose delete...\e[0m\n' && sleep 1
 			deleteIronfish
