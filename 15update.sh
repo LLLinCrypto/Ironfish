@@ -4,7 +4,7 @@
 mkdir -p ~/if_wallet/backup/
 echo $IRONFISH_NODENAME
 INN=$IRONFISH_NODENAME
-export INN=$INN >> $HOME/.bash_profile&source ~/.bash_profile
+export INN=$INN >> $HOME/.bash_profile&&source ~/.bash_profile
 
 ironfish accounts:export $IRONFISH_WALLET ~/if_wallet/backup/$IRONFISH_WALLET.json
 echo " wallet exported"
@@ -12,5 +12,6 @@ echo " wallet exported"
 cd ~/if_wallet/backup/
 cat  $HOME/.ironfish/config.json |  tee -a nodename_graffiti.txt 
 echo $INN
-cat  ~/ironfish_keys/$IRONFISH_WALLET.json
+cat   ~/if_wallet/backup/$IRONFISH_WALLET.json
+#cat  ~/ironfish_keys/$IRONFISH_WALLET.json
 echo "Success!!!"
