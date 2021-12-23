@@ -3,7 +3,7 @@
 . $HOME/.bash_profile
 mkdir -p /root/ironfish/ironfish-cli/backup/
 echo $IRONFISH_NODENAME
-$IRONFISH_NODENAME=INN
+INN=$IRONFISH_NODENAME
 export INN=$INN >> $HOME/.bash_profile&source ~/.bash_profile
 cd /root/ironfish/ironfish-cli/backup/ 
 echo " folder created"
