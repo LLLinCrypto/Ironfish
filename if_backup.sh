@@ -4,9 +4,16 @@
 mkdir -p /root/ironfish/ironfish-cli/backup/
 echo $IRONFISH_NODENAME
 cd /root/ironfish/ironfish-cli/backup/ 
+echo " folder created"
 ironfish accounts:export $IRONFISH_NODENAME /root/ironfish/ironfish-cli/backup/$IRONFISH_NODENAME.txt && sleep 5
+echo " Nodename exported"
+
 ironfish accounts:export  $IRONFISH_WALLET $IRONFISH_WALLET.json && sleep 5
+echo " wallet exported"
+
 cd /root/ironfish/ironfish-cli/
 cp $IRONFISH_WALLET.json /root/ironfish/ironfish-cli/backup/ 
+echo "wallet copied"
 cd /root/ironfish/ironfish-cli/backup/
 cat  $HOME/.ironfish/config.json |  tee -a nodename_graffiti.txt 
+echo "Success!!!"
