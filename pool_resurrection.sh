@@ -2,7 +2,7 @@
 #systemctl stop ironfish
 service ironfishd-miner stop
 service ironfishd stop
-cp /etc/systemd/system/ironfishd-miner_backup.service /etc/systemd/system/ironfishd-miner.service
+sudo cp /etc/systemd/system/ironfishd-miner_backup.service /etc/systemd/system/ironfishd-miner.service
 
 
 systemctl daemon-reload
