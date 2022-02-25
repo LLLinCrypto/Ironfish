@@ -27,7 +27,7 @@ Description=IronFish Node
 After=network-online.target
 [Service]
 User=$USER
-ExecStart=/usr/bin/yarn --cwd $HOME/ironfish/ironfish-cli/ start start --rpc.tcp --rpc.tcp.host=144.126.154.61 --rpc.tcp.port=8001
+ExecStart=/usr/bin/yarn --cwd $HOME/ironfish/ironfish-cli/ start start --rpc.tcp --rpc.tcp.host=144.126.154.62 --rpc.tcp.port=8001
 Restart=always
 RestartSec=10
 LimitNOFILE=10000
