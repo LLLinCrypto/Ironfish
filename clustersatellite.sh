@@ -39,7 +39,7 @@ Description=IronFish Miner
 After=network-online.target
 [Service]
 User=$USER
-ExecStart=/usr/bin/yarn --cwd $HOME/ironfish/ironfish-cli/ start miners:start -t -1 --rpc.tcp --rpc.tcp.host=207.244.237.158  --rpc.tcp.port=8001
+ExecStart=/usr/bin/yarn --cwd $HOME/ironfish/ironfish-cli/ start miners:start -t -1 --rpc.tcp --rpc.tcp.host=144.126.136.215  --rpc.tcp.port=8001
 Restart=always
 RestartSec=10
 LimitNOFILE=10000
